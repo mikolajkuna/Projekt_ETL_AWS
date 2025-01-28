@@ -104,8 +104,8 @@ def perform_sliding_window_aggregation(input_table_name):
                 .alias("one_minute_window")
             )
             .group_by("data_czas, one_minute_window")
-            .select("data_czas, movie.count as movie_count, to_string(one_minute_window.end) as event_time")
-            .where("movie_count > 1")
+            .select("data_czas, prac_id.count as prac_id_count, to_string(one_minute_window.end) as event_time")
+            .where("prac_id_count > 1")
     )
 
     return sliding_window_table
