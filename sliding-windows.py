@@ -10,7 +10,7 @@ This module:
     2. Creates a source table from a Kinesis Data Stream
     3. Creates a sink table writing to a Kinesis Data Stream
     4. Queries from the Source Table and
-       creates a sliding window over 10 seconds to calculate the minimum value over the window.
+       creates a sliding window over 24 hours to calculate the minimum value over the window.
     5. These sliding window results are inserted into the Sink table.
 """
 
@@ -56,6 +56,7 @@ def property_map(props, property_group_id):
         if prop["PropertyGroupId"] == property_group_id:
             return prop["PropertyMap"]
 
+
 def create_input_table(table_name, stream_name, region, stream_initpos):
     return """ CREATE TABLE {0} (
                 prac_id VARCHAR(255),
@@ -74,6 +75,7 @@ def create_input_table(table_name, stream_name, region, stream_initpos):
                 'format' = 'json',
                 'json.timestamp-format.standard' = 'ISO-8601'
               ) """.format(table_name, stream_name, region, stream_initpos)
+
 
 def create_output_table(table_name, stream_name, region):
     return """ CREATE TABLE {0} (
@@ -98,13 +100,13 @@ def perform_sliding_window_aggregation(input_table_name):
     sliding_window_table = (
         input_table
             .window(
-                Slide.over("1.minutes")
-                .every("30.seconds")
+                Slide.over("24.hours")  # Zmieniono z 1 minuty na 24 godziny
+                .every("1.hour")  # Interwał przesunięcia o 1 godzinę
                 .on("event_time")
-                .alias("one_minute_window")
+                .alias("one_day_window")  # Nazwa okna może pozostać
             )
-            .group_by("data_czas, one_minute_window")
-            .select("data_czas, prac_id.count as prac_id_count, to_string(one_minute_window.end) as event_time")
+            .group_by("data_czas, one_day_window")  # Grupowanie po danym oknie
+            .select("data_czas, prac_id.count as prac_id_count, to_string(one_day_window.end) as event_time")
             .where("prac_id_count > 1")
     )
 
@@ -153,7 +155,7 @@ def main():
     # 3. Creates a sink table writing to a Kinesis Data Stream
     table_env.execute_sql(create_output_table(output_table_name, output_stream, output_region))
 
-    # 4. Queries from the Source Table and creates a sliding window over 10 seconds to calculate the minimum value
+    # 4. Queries from the Source Table and creates a sliding window over 24 hours to calculate the minimum value
     # over the window.
     sliding_window_table = perform_sliding_window_aggregation(input_table_name)
     table_env.create_temporary_view("sliding_window_table", sliding_window_table)
