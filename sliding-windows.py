@@ -101,7 +101,7 @@ def perform_sliding_window_aggregation(input_table_name):
         input_table
             .window(
                 Slide.over("24.hours")
-                .every("1.hour")
+                .every("12.hours")
                 .on("event_time")
                 .alias("one_day_window")
             )
