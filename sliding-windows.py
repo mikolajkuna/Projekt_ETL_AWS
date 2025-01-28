@@ -60,8 +60,8 @@ def create_input_table(table_name, stream_name, region, stream_initpos):
     return """ CREATE TABLE {0} (
                 prac_id VARCHAR(255),
                 data_czas VARCHAR(255),
-                min_status VARCHAR(255),
-                max_status VARCHAR(255),
+                wejscie VARCHAR(255),
+                wyjscie VARCHAR(255),
                 event_time TIMESTAMP(3),
                 WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND
               )
