@@ -24,11 +24,11 @@ import json
 env_settings = EnvironmentSettings.in_streaming_mode()
 table_env = TableEnvironment.create(env_settings)
 
-APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"  # on kda
+APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"
 
 is_local = (
     True if os.environ.get("IS_LOCAL") else False
-)  # set this env var in your local environment
+)
 
 if is_local:
     # only for local, overwrite variable to properties and pass in your jars delimited by a semicolon (;)
@@ -100,12 +100,12 @@ def perform_sliding_window_aggregation(input_table_name):
     sliding_window_table = (
         input_table
             .window(
-                Slide.over("24.hours")  # Zmieniono z 1 minuty na 24 godziny
-                .every("1.hour")  # Interwał przesunięcia o 1 godzinę
+                Slide.over("24.hours")
+                .every("1.hour")
                 .on("event_time")
-                .alias("one_day_window")  # Nazwa okna może pozostać
+                .alias("one_day_window")
             )
-            .group_by("data_czas, one_day_window")  # Grupowanie po danym oknie
+            .group_by("data_czas, one_day_window")
             .select("data_czas, prac_id.count as prac_id_count, to_string(one_day_window.end) as event_time")
             .where("prac_id_count > 1")
     )
