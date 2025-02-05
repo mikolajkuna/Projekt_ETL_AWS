@@ -34,17 +34,17 @@ def lambda_handler(event, context):
             if prac_id not in pracownicy:
                 pracownicy[prac_id] = {}
             pracownicy[prac_id][data_czas] = {"wejscie": None, "wyjscie": None}
-        
-        # Zapisujemy wejscie (status_id == 1) lub wyjscie (status_id == 2) dla danego dnia
+
+        # Saving entry (status_id == 1) or exit (status_id == 2) for the given day
         if status_id == 1:
             pracownicy[prac_id][data_czas]["wejscie"] = data_czas
         elif status_id == 2:
             pracownicy[prac_id][data_czas]["wyjscie"] = data_czas
-        
-        # Sprawdzamy, czy mamy pelna pare (wejscie i wyjscie) w tym samym dniu
+
+        # Checking if we have a complete pair (entry and exit) on the same day
         if (pracownicy[prac_id][data_czas]["wejscie"] and 
             pracownicy[prac_id][data_czas]["wyjscie"]):
-            # Wysylamy dane do strumienia, jesli mamy pelna pare
+            # Sending data to the stream if we have a complete pair
             put_to_stream(prac_id, data_czas, 
                           pracownicy[prac_id][data_czas]["wejscie"], 
                           pracownicy[prac_id][data_czas]["wyjscie"])
@@ -52,7 +52,7 @@ def lambda_handler(event, context):
             pracownicy[prac_id][data_czas]["wejscie"] = None
             pracownicy[prac_id][data_czas]["wyjscie"] = None
 
-    # Sprawdzamy, którzy pracownicy nie maja pelnej pary (brak wejscia lub wyjscia)
+    # Checking which employees do not have a complete pair (missing entry or exit)
     for prac_id, dni in pracownicy.items():
         for data_czas, statusy in dni.items():
             if statusy["wejscie"] is not None and statusy["wyjscie"] is None:
